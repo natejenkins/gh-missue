@@ -7,30 +7,30 @@
 # Formatting    UTF-8 with 4-space TAB stops and no TAB chars.
 # URL:          https://github.com/E3V3A/gh-missue
 # Based On:     https://github.com/TimothyBritt/github-issue-migrate
-# 
-# Description:  A Ruby script for migrating selected GitHub issues to your own repository and 
+#
+# Description:  A Ruby script for migrating selected GitHub issues to your own repository and
 #               using OAuth2 authentication to increase speed and prevent rate limiting.
 #
 # Dependencies:
 #       [1] docopt  https://github.com/docopt/docopt.rb/
 #       [2] octokit https://github.com/octokit/octokit.rb/
-# 
+#
 # NOTE:
 #
 #   1. To make this run, you need to:
 #           (a) have Ruby installed
 #           (b) gem install GitHubs own "octokit" library
-#           (c) gem install the option parser "docopt" 
+#           (c) gem install the option parser "docopt"
 #   2. You should also consider creating a personal authentication token on GitHub,
 #      to avoid getting rate-limited by a large number of requests in short time.
 #
-# ToDo: 
-#   
+# ToDo:
+#
 #   [ ] Fix username/password authentication
-#   [ ] Fix inclusion of CLI options: -d, -n  
+#   [ ] Fix inclusion of CLI options: -d, -n
 #       -d              - show debug info with full option list, raw requests & responses etc.
 #       -n  <1,3-6,9>   - only migrate issues given by the list. Can be a range.
-#       
+#
 #==================================================================================================
 
 # Use Ruby3 "frozen" in Ruby2
@@ -104,7 +104,7 @@ class IssueMigrator
     attr_accessor :access_token, :issues, :ilist, :itype, :client, :target_repo, :source_repo
 
     def initialize(access_token, source_repo, target_repo)
-        @client = Octokit::Client.new( :access_token => access_token, 
+        @client = Octokit::Client.new( :access_token => access_token,
             # :accept => 'application/vnd.github.symmetra-preview+json',
             # :headers => { "X-GitHub-OTP" => "<your 2FA token>" }
             per_page: 100 )
@@ -236,12 +236,12 @@ begin
         puts "\nThe supplied CLI options were:\n#{ARGV.inspect}\n\n"
     end
 
-    if options['<oauth2_token>'] 
+    if options['<oauth2_token>']
         access_token = options['<oauth2_token>']
-        if access_token.size != 40 
+        if access_token.size != 40
             puts "Error: The github access token has to be 40 characters long!"
             exit
-        else 
+        else
             puts "Using access_token: #{access_token}" if options['-d']
         end
     end
@@ -269,12 +269,12 @@ begin
     # -r / curl -i -G 'https://api.github.com/rate_limit?access_token=xxxx'
     if ( options['-r'] )
         if (access_token)
-            puts "Using access_token: #{access_token}" 
+            puts "Using access_token: #{access_token}"
             uri = URI.parse("https://api.github.com/rate_limit?access_token=#{access_token}")
-        else 
+        else
             uri = URI.parse("https://api.github.com/rate_limit")
         end
-        res = Net::HTTP.get_response(uri) 
+        res = Net::HTTP.get_response(uri)
         if (res.message != "OK")    # 200
             puts "ERROR: Bad reponse code: #{res.code}\n"
             puts res.body
@@ -293,7 +293,7 @@ begin
             puts "Refresh at : #{RT}"
         end
     end
-    
+
     # MAIN
     if ( options['<source_repo>'] and options['<target_repo>'] )
         itype = options['-t']
@@ -308,7 +308,7 @@ begin
         end
         #exit if options['-c']
         im.pull_source_issues(itype)    # add ilist
-        #im.list_source_issues(itype)   # 
+        #im.list_source_issues(itype)   #
         im.push_issues
     end
 

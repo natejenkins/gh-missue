@@ -45,24 +45,24 @@ But it can do much more. You can also:
 
 Sometimes, the structure of your project changes so drastically that it would break your repository.
 You need an easy way to start from scratch and just commit everything to a new repository.
-But, you've got all these valuable issues in the old repository on Github. 
+But, you've got all these valuable issues in the old repository on Github.
 
 
 **Q:** *Why are you using Ruby?*
 
-I have never used Ryby until a few evenings ago. I came across an old library to migrate issues on github. 
-However, it was half broken and extremely limited. But using a library sucked and I wanted a proper CLI 
-that could handle large request rates. I decided to hack into it. Ruby is a nice and suprisingly robust 
+I have never used Ryby until a few evenings ago. I came across an old library to migrate issues on github.
+However, it was half broken and extremely limited. But using a library sucked and I wanted a proper CLI
+that could handle large request rates. I decided to hack into it. Ruby is a nice and suprisingly robust
 language and it is still alive. Not surprsingly it is used by GitHub themselves.
 
-You can read more about `Why Ruby isn't dead`: [here](https://www.engineyard.com/blog/ruby-still-isnt-dead) and 
-[here](https://expertise.jetruby.com/is-ruby-on-rails-dead-2018-edition-407a618dab3a) and 
+You can read more about `Why Ruby isn't dead`: [here](https://www.engineyard.com/blog/ruby-still-isnt-dead) and
+[here](https://expertise.jetruby.com/is-ruby-on-rails-dead-2018-edition-407a618dab3a) and
 [here](https://www.tiobe.com/tiobe-index/ruby/).
 
 
 **Q:** *Will I continue to support this tool?*
 
-Sure, if it is broken, but I will not spend any more time for new features. So if you wanna add something 
+Sure, if it is broken, but I will not spend any more time for new features. So if you wanna add something
 please send me a PR.
 
 ---
@@ -75,14 +75,14 @@ This tool depends on:
 2. [octokit](https://github.com/octokit/octokit.rb/) -- For GitHub API access
 
 
-### Installation 
+### Installation
 
 
-1. To make this run, you need to:  
-   (a) have Ruby installed  
-   (b) gem install GitHubs own "octokit" library  
+1. To make this run, you need to:
+   (a) have Ruby installed
+   (b) gem install GitHubs own "octokit" library
    (c) gem install the option parser "docopt"
-2. You should also consider creating a personal authentication token on GitHub,  
+2. You should also consider creating a personal authentication token on GitHub,
    to avoid getting rate-limited by a large number of requests in short time.
 
 ---
@@ -126,22 +126,22 @@ bundle install
 
 ### How to Run
 
-There are several ways to run this tool. Please refer to the built-in help for details. 
+There are several ways to run this tool. Please refer to the built-in help for details.
 To show help, use the command option `-h`,  like this: `./gh-missue.rb -h`.
 
 To copy all the **open** issues from one repository (`<source_repo>`) to another (`<target_repo>`):
 
-1. If you want your issues to also copy the issue labels and including the `name, color, description` tags,  
-   you have to make sure the target repo does not already have any issue labels. If it does,  
+1. If you want your issues to also copy the issue labels and including the `name, color, description` tags,
+   you have to make sure the target repo does not already have any issue labels. If it does,
    you need to remove them first, using the github web page under *labels* settings.
-2. First copy **all** the issue labels with:  
+2. First copy **all** the issue labels with:
    `./gh-missue.rb -c <source_repo> <target_repo>`
-3. Then copy all the *open* issues with:  
+3. Then copy all the *open* issues with:
    `./gh-missue.rb -t open <source_repo> <target_repo>`
 
 
 * If you omit creating all labels, the individual issue labels used, will still be created, but without color or description.
-* If you hit a rate limit, you will need to insert your [personal access token](https://github.com/settings/tokens), before `<source_repo>`.  
+* If you hit a rate limit, you will need to insert your [personal access token](https://github.com/settings/tokens), before `<source_repo>`.
 You can check your current rate limit with: `./gh-missue.rb -r`
 
 
@@ -149,9 +149,9 @@ You can check your current rate limit with: `./gh-missue.rb -r`
 
 #### Bugs and Warnings
 
-:red_circle: If you need to copy more than 30 issues/hour, you will need to create a personal access token.  
+:red_circle: If you need to copy more than 30 issues/hour, you will need to create a personal access token.
 (Because the unauthenticated request limit is 60, and each copy operation need 2 requests.)
- 
+
 
 * If you are only migrating *labels* (with the `-c` option), make sure the labels doesn't already exist
 in the target repo, or you will have a failure. I.e. there are some default lables, that you need
@@ -186,17 +186,17 @@ Feel free to fork, break, fix and contribute. Enjoy!
 **Essential GitHub API documents:**
 
  [Labels-used-for-issues](https://github.com/dotnet/roslyn/wiki/Labels-used-for-issues)
- https://developer.github.com/v3/issues/  
- https://developer.github.com/v3/issues/labels/  
- https://developer.github.com/v3/issues/labels/#get-a-single-label  
- https://developer.github.com/v3/issues/#list-issues-for-a-repository  
+ https://developer.github.com/v3/issues/
+ https://developer.github.com/v3/issues/labels/
+ https://developer.github.com/v3/issues/labels/#get-a-single-label
+ https://developer.github.com/v3/issues/#list-issues-for-a-repository
 
- https://developer.github.com/v3/#abuse-rate-limits  
- https://developer.github.com/v3/#rate-limiting  
- https://developer.github.com/v3/rate_limit/  
- https://developer.github.com/v4/guides/resource-limitations/  
- https://developer.github.com/v3/guides/best-practices-for-integrators/#dealing-with-rate-limits  
- https://developer.github.com/v3/#increasing-the-unauthenticated-rate-limit-for-oauth-applications  
+ https://developer.github.com/v3/#abuse-rate-limits
+ https://developer.github.com/v3/#rate-limiting
+ https://developer.github.com/v3/rate_limit/
+ https://developer.github.com/v4/guides/resource-limitations/
+ https://developer.github.com/v3/guides/best-practices-for-integrators/#dealing-with-rate-limits
+ https://developer.github.com/v3/#increasing-the-unauthenticated-rate-limit-for-oauth-applications
 
 
 ---
@@ -210,6 +210,6 @@ Most grateful thanks to:
 
 #### License
 
-[![GitHub license](https://img.shields.io/github/license/E3V3A/gh-missue.svg)](https://github.com/E3V3A/gh-missue/blob/master/LICENSE) 
+[![GitHub license](https://img.shields.io/github/license/E3V3A/gh-missue.svg)](https://github.com/E3V3A/gh-missue/blob/master/LICENSE)
 A license to :sparkling_heart:!
 

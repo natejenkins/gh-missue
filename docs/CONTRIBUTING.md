@@ -1,30 +1,30 @@
-## Welcome Contributor! :heart: 
+## Welcome Contributor! :heart:
 
 This is the contributor page for the MagicMirror Module project `MMM-Assistant`.
 
 We are dearly excited to see that you are interested in contributing to this module.
-This is your guide for doing so. The following text is meant as a guide line, but in 
+This is your guide for doing so. The following text is meant as a guide line, but in
 reality you can skip all the text below! In either case it was just stolen from the
 Atom project [here](https://github.com/atom/atom/blob/master/CONTRIBUTING.md).
 
-#### Is there anything I want to say? 
+#### Is there anything I want to say?
 
 Perhaps a very few things:
 
-* Please use a `4-space` tabulator stop and do not use `TAB` characters for code formatting.  
+* Please use a `4-space` tabulator stop and do not use `TAB` characters for code formatting.
   (I actually love TABs, but most people don't know how to use different spacings.)
 * Do not remove my code comments, unless they are wrong. I love keeping sensible comments!
 * Do not use that *effin' Java commenting system with bunch of `/** usless blah */`.
-* Keep the MAX code line lengths between 80-120 characters. 
+* Keep the MAX code line lengths between 80-120 characters.
 * Use `function() {` rather than `function (){`.
-* Avoid using a separate line for the **starting** curly bracket, `{`, unless its in a JSON or object.  
+* Avoid using a separate line for the **starting** curly bracket, `{`, unless its in a JSON or object.
 * Use UTF-8 file encoding where possible.
 
 I think that's about it, for now.
 
 Thanks again for wanting to contribute!
 
-:heart: 
+:heart:
 
 **END**
 
