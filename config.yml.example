@@ -1,0 +1,5 @@
+# User tokens will be used to migrate issues and comments
+# with the appropriate author.
+user-tokens:
+  user1: token1
+  user2: token2

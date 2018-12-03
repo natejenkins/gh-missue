@@ -45,8 +45,9 @@ require 'octokit'
 require 'net/http'
 require 'uri'
 require 'json'
+require 'yaml'
 
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 options = {}
 
 #--------------------------------------------------------------------------------------------------
@@ -71,6 +72,7 @@ doc = <<DOCOPT
         #{__FILE__} -d
         #{__FILE__} -v
         #{__FILE__} -h
+        #{__FILE__} -s <itype> [<oauth2_token>] <repo>
 
   Options:
 
@@ -82,6 +84,7 @@ doc = <<DOCOPT
         -n <ilist>          - only migrate issues with comma separated numbers given by the list. Can include a range.
         -h, --help          - show this help message and exit
         -v, --version       - show version and exit
+        -s, --stats         - show source repo issue statistics
 
   Examples:
 
@@ -119,7 +122,21 @@ class IssueMigrator
             # // OAuth2 App Credentials
             #:client_id     => "<YOUR_20_CHAR_OATH2_ID>",
             #:client_secret => "<YOUR_40_CHAR_OATH2_SECRET>"
-
+        @config = YAML.load(File.read('config.yml'))
+        @user_tokens = @config["user-tokens"]
+        @users = {}
+        @user_tokens.keys.map do |login|
+            token = @user_tokens[login]
+            user_client = Octokit::Client.new( :access_token => token,
+                # :accept => 'application/vnd.github.symmetra-preview+json',
+                # :headers => { "X-GitHub-OTP" => "<your 2FA token>" }
+                per_page: 100 )
+            user_client.auto_paginate = true
+            @users[login] = {
+              token: token,
+              client: user_client
+            }
+        end
         user = client.user
         user.login
         @source_repo = source_repo
@@ -138,6 +155,31 @@ class IssueMigrator
         pull_source_issues(itype)
         @issues.each do |source_issue|
             puts "[#{source_issue.number}]\t  #{source_issue.title}"
+        end
+    end
+
+    def source_statistics(itype)
+        pull_source_issues(itype)
+        issue_creators = []
+        commenters = []
+        @issues.each do |source_issue|
+            issue_creators.push source_issue[:user][:login]
+            puts "[#{source_issue.number}]\t  #{source_issue.title}"
+            comments = get_source_comments(source_issue)
+            comments.each do |comment|
+              commenters.push comment[:user][:login]
+            end
+        end
+        puts
+        unique_issue_creators = issue_creators.uniq
+        unique_commenters = commenters.uniq
+        puts "issue_creators:"
+        unique_issue_creators.each do |uic|
+          puts "#{uic}: #{issue_creators.count(uic)}"
+        end
+        puts "issue_commenters:"
+        unique_commenters.each do |uic|
+          puts "#{uic}: #{commenters.count(uic)}"
         end
         puts
     end
@@ -170,6 +212,28 @@ class IssueMigrator
         puts "done."
     end
 
+    def get_user_client(issue_or_comment)
+      login = issue_or_comment[:user][:login]
+      return @users[login] && @users[login][:client] || nil
+    end
+
+    def create_issue(source_issue, source_labels)
+      user_client = get_user_client(source_issue)
+      body = nil
+      title = nil
+      if !user_client
+          user_client = @client
+          title = tag_title_with_original_author(source_issue)
+          body = tag_body_with_original_author(source_issue)
+          body = tag_body_with_original_issue(source_issue, body)
+      else
+          title = source_issue.title
+          body = tag_body_with_original_issue(source_issue)
+      end
+      target_issue = user_client.create_issue(@target_repo, title, body, {labels: source_labels})
+
+    end
+
     def push_issues
         @issues.reverse!
         n = 0
@@ -179,12 +243,12 @@ class IssueMigrator
             source_labels = get_source_labels(source_issue)
             source_comments = get_source_comments(source_issue)
             if !source_issue.key?(:pull_request) || source_issue.pull_request.empty?
-                target_issue = @client.create_issue(@target_repo, source_issue.title, source_issue.body, {labels: source_labels})
+                target_issue = create_issue(source_issue, source_labels)
                 push_comments(target_issue, source_comments) unless source_comments.empty?
-                @client.close_issue(@target_repo, target_issue.number) if source_issue.state === 'closed'
+                client.close_issue(@target_repo, target_issue.number) if source_issue.state === 'closed'
             end
             # We need to set a rate limit, even for OA2, it is 0.5 [req/sec]
-            sleep(90) if ( issues.size > 1 ) # [sec]
+            sleep(10) if ( issues.size > 1 ) # [sec]
         end
         puts "\n"
     end
@@ -200,17 +264,56 @@ class IssueMigrator
     end
 
     def get_source_comments(source_issue)
-        comments = []
         source_comments = @client.issue_comments(@source_repo, source_issue.number)
-        source_comments.each do |cmt|
-            comments << cmt.body
-        end
-        comments
+    end
+
+    def date_time(comment_or_issue, time=true)
+        format = time ? "%B %d, %Y %R" : "%B %d, %Y"
+        comment_or_issue.created_at.strftime(format)
+    end
+
+    def date(comment_or_issue)
+        date_time(comment_or_issue, false)
+    end
+
+    def tag_body_with_original_author(comment_or_issue, body=nil)
+        body  ||= comment_or_issue.body
+        login = comment_or_issue[:user][:login]
+        body  = '_From ' + '@' + login + " on #{date_time(comment_or_issue)}_\n\n" + body
+    end
+
+    def tag_body_with_original_issue(issue, body=nil)
+        body ||= issue.body
+        login = issue[:user][:login]
+        m = issue.html_url.match(/\Ahttps:\/\/github\.com\/(.*)\/(.*)\/issues\/\d+\z/)
+        org_name  = m[1]
+        repo_name = m[2]
+        orig_link = "_Copied from original issue: #{org_name}/#{repo_name}\##{issue.number}_"
+        body  = body + "\n\n" + orig_link
+    end
+
+    def tag_title_with_original_author(comment_or_issue, title=nil)
+        title ||= comment_or_issue.title
+        login = comment_or_issue[:user][:login]
+        title  = title + " (#{login} on #{date(comment_or_issue)})"
+    end
+
+    def create_comment(target_issue, source_comment)
+      user_client = get_user_client(source_comment)
+      body = nil
+      if !user_client
+          user_client = @client
+          body = tag_body_with_original_author(source_comment)
+      else
+          body = source_comment.body
+      end
+
+      user_client.add_comment(@target_repo, target_issue.number, body)
     end
 
     def push_comments(target_issue, source_comments)
         source_comments.each do |cmt|
-            @client.add_comment(@target_repo, target_issue.number, cmt)
+            create_comment(target_issue, cmt)
         end
     end
 end
@@ -254,6 +357,15 @@ begin
         im = IssueMigrator.new("#{access_token}", "#{source_repo}", "#{target_repo}")
         im.list_source_issues(itype)
         im.list_source_labels
+    end
+
+    # -s <itype> [<oauth_token>] <source_repo>
+    if ( options['--stats'] )
+        itype = options["<itype>"]
+        source_repo =  options['<repo>']
+        target_repo = "E3V3A/TESTT" # a dummy repo
+        im = IssueMigrator.new("#{access_token}", "#{source_repo}", "#{target_repo}")
+        im.source_statistics(itype)
     end
 
     # -n <ilist>

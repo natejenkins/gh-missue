@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+#### [1.0.2] - 2018-04-10
+
+- Add --stats option to get contributor stats for comments and issues.
+- Add link back to issue in original repository and mention the original author and date of issue or comment.
 
 #### [1.0.1] - 2018-04-10
 

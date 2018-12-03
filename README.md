@@ -11,7 +11,7 @@ A complete GitHub issue migration CLI tool written in Ruby.
 
 | STATUS: | Version | Date | Maintained? |
 |:------- |:------- |:---- |:----------- |
-| Working | `1.0.1` | 2018-04-10 | YES |
+| Working | `1.0.2` | 2018-04-10 | YES |
 
 ---
 
@@ -24,6 +24,7 @@ But it can do much more. You can also:
 - List any/all issues in any puplic repository
 - List or migrate only issues selected by their *status*: `[all, open, closed]`
 - List all available issue *labels* for any repository
+- List contributor stats for issues and comments
 - Copy all available issue *labels* for any repository, including: `name, color, description`.
 - Use 3 different types of GitHub authentication: (*none, OAuth2 token, username/password*)
 - Test your current GitHub request status showing your: *rate limit, ramining requests, quota refresh time*.
@@ -37,8 +38,6 @@ But it can do much more. You can also:
 
 - Does not close issues on source repository after move
 - Does not copy time-stamps. The new time is when the issue was moved.
-- Does not copy issue-author. You will be the new author of all moved issues.
-- Does not copy comment-authors. You will be the new author of all moved issue comments.
 - Does not copy PR's. (But script can be easily modified to do so.)
 
 **Q:** *Why is this needed?*
@@ -136,7 +135,8 @@ To copy all the **open** issues from one repository (`<source_repo>`) to another
    you need to remove them first, using the github web page under *labels* settings.
 2. First copy **all** the issue labels with:
    `./gh-missue.rb -c <source_repo> <target_repo>`
-3. Then copy all the *open* issues with:
+3. Create a config.yml file, adding any user tokens for contributors.  Issues opened by a user with a token, or comments made by a user with a token, will be properly attributed.  For users without tokens a reference to them will be added in the issue or comment.
+4. Then copy all the *open* issues with:
    `./gh-missue.rb -t open <source_repo> <target_repo>`
 
 
